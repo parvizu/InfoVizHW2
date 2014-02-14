@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Busines Expenditures</title>
+    <link rel="stylesheet" href="_css/main.css">
+    <script src="_js/jquery-1.11.0.min.js"></script>
+    <script src="_js/highcharts.js"></script>
+    <script src="http://code.highcharts.com/modules/data.js"></script>
+    <script src="http://code.highcharts.com/modules/drilldown.js"></script>
+</head>
+<body>
+    <div id="container">
+    </div>
+
+<script>
+
+// function to return color (gold/silver/bronze)
+function colors(i) {
+  switch(i) {
+    case 0:
+      return "#CFB53B";
+      break;
+    case 1:
+      return "#DDDDDD";
+      break;
+    case 2:
+      return "#8C7853";
+      break;
+  };
+}  
+
+
+
+// set up the initial options
+var options = {
+  chart: {
+    renderTo: "container",
+    type: "bar",
+    style: {
+      fontFamily: "Helvetica,Arial,sans-serif"
+    }
+  },
+  legend: {
+    borderRadius: 0,
+    itemStyle: {
+      color: "#000000",
+      fontFamily: "Helvetica,Arial,sans-serif"
+    }
+  },
+  plotOptions: {
+    series: {
+      stacking: "normal"
+    }
+  },
+  series: [],
+  title: {
+    text: "US 2012 Olympics Medal Count",
+    style: {
+      color: "#000000",
+      fontFamily: "Helvetica,Arial,sans-serif",
+      fontSize: "20px",
+      fontWeight: "bold"
+    }
+  },
+  tooltip: {
+    // hints: borderRadius, borderWidth, shadow
+    style: {
+      // hints: color, fontFamily, fontSize, padding
+      color: "black",
+      borderRadius: "5px",
+      fontSize: "12px"
+    }
+  },
+  xAxis: {
+    categories: [],
+    labels: {
+      style: {
+        color: "#333333",
+        fontFamily: "Helvetica,Arial,sans-serif"
+      }
+    },
+    title: {
+      text: "Sport",
+      style: {
+        color: "#333333",
+        fontFamily: "Helvetica,Arial,sans-serif",
+        fontSize: "18px"
+      }
+    }
+  },
+  yAxis: {
+    // hints: gridLineColor, gridLineDashStyle
+    labels: {
+      style: {
+        color: "#333333",
+        fontFamily: "Helvetica,Arial,sans-serif"
+      }
+    },
+    min: 0,
+    stackLabels: {
+      enabled: true,
+      style: {
+        fontFamily: "Helvetica,Arial,sans-serif",
+        fontWeight: "bold",
+        color: "#333333"
+      }
+    },
+    title: {
+      style: {
+        color: "#333333",
+        fontFamily: "Helvetica,Arial,sans-serif",
+        fontSize: "18px"
+      },
+      text: "# of Medals"
+    }
+  }
+}
+
+
+
+// ajax call to data from the csv file
+$.get("_data/expenditures.csv", function (data) {
+
+  //console.log(data);
+
+  var budget = [];
+  var actual = [];
+
+  var lines = data.split(/\r/);
+  console.log(lines);
+
+  $.each(lines, function(lineNo, line) {
+    console.log(line);
+  });
+
+});
+
+
+/*
+  var medalType = [];
+  var medalCount = [[], [], []];
+
+  var lines = data.split(/\n/);
+  console.log(lines);
+  // loop through each line using $.each
+  $.each(lines, function(lineNo, line) {
+
+    // turn each line into an array that contains 5 items: sport type, gold count, silver count, bronze count, & total count
+    // use the .split() method
+    var temp = line.split(',');
+    // use if an statement to differentiate between header & content
+    if (lineNo == 0) {
+    // if it's the header,
+      // split the array
+      // and add only gold, silver, and bronze to "medalType"
+
+      medalType.push(temp[1]);
+      medalType.push(temp[2]);
+      medalType.push(temp[3]);
+
+    } else {
+    // otherwise,
+      // populate "options.xAxis.categories" array with the sports type ("Archery", "Athletics", etc.)
+      // populate "medalCount" array; push the gold medal count to the medalCount[0], silver to medalCount[1], & bronze to medalCount[2]
+      options.xAxis.categories.push(temp[0]);
+      
+      medalCount[0].push(parseInt(temp[1]));
+      medalCount[1].push(parseInt(temp[2]));
+      medalCount[2].push(parseInt(temp[3]));
+      
+    };    
+
+  });
+
+  // "options.series" is an array & each item in the array is an object with 3 keys: "name", "data", & "color"; in this example:
+    // "name" = type of medal (gold/silver/bronze)
+    // "data" = medal count per sport by type
+    // "color" = bar color
+  // use a for loop to populate "options.series"
+  for (var i = 0; i<medalCount.length; i++) {
+    options.series.push( {
+      name: medalType[i],
+      data: medalCount[i],
+      color: colors(i)
+    });
+  
+    console.log(options.series);
+    // create a placeholder object & pull the required value for each key from "medalType" variable, "medalCount" variable, & "colors()" function
+    // after the object is properly constructed, push it to "options.series" 
+  }
+
+  // finally draw the chart by creating a new "Highcharts" object, which has settings that are defined in "options"
+   var chart = new Highcharts.Chart(options);
+
+   totalCharts(data);
+
+});
+
+function totalCharts(data) {
+
+  var drilldownSeries = [[],[],[]];
+
+  var totals = [0,0,0,0];
+
+  var lines = data.split(/\n/);
+  $.each(lines, function(lineNo, line) {
+    var temp = line.split(',');
+    if (lineNo != 0) {
+      totals[0] += parseInt(temp[1]);
+      totals[1] += parseInt(temp[2]);
+      totals[2] += parseInt(temp[3]);
+      totals[3] += parseInt(temp[4]);
+
+      if(parseInt(temp[1]) > 0 ) {
+        drilldownSeries[0].push({
+                name: temp[0],
+                data: temp[1]
+              });
+      }
+      
+      if(parseInt(temp[2]) > 0 ) {
+        drilldownSeries[1].push({
+          name: temp[0],
+          data: temp[2]
+        });
+      }
+
+      if(parseInt(temp[3]) > 0 ) {
+        drilldownSeries[2].push({
+          name: temp[0],
+          data: temp[3]
+        });
+      }
+    }
+  });
+  console.log(totals);
+  console.log(drilldownSeries);
+
+  
+
+  $('#container2').highcharts({
+      chart: {
+          type: 'column'
+      },
+      title: {
+          text: 'Medals by Type',
+          style: {
+          color: "#000000",
+          fontFamily: "Helvetica,Arial,sans-serif",
+          fontSize: "20px",
+          fontWeight: "bold"
+        }
+      },
+      subtitle: {
+          text: 'Click columns to view Sports with medals (in progress...)'
+      },
+      xAxis: {
+          categories: [
+              'Totals by Medal Type'
+          ],
+          title: {
+            text: "Medal Type",
+            style: {
+              color: "#333333",
+              fontFamily: "Helvetica,Arial,sans-serif",
+              fontSize: "18px"
+            }
+          }
+      },
+      yAxis: {
+          min: 0,
+          title: {
+              text: '# of Medals'
+          }
+      },
+      tooltip: {
+        // hints: borderRadius, borderWidth, shadow
+        style: {
+          // hints: color, fontFamily, fontSize, padding
+          color: "black",
+          borderRadius: "5px",
+          fontSize: "12px"
+        }
+      },
+      plotOptions: {
+          column: {
+              pointPadding: 0.2,
+              borderWidth: 0
+          }
+      },
+      series: [{
+          name: 'Gold',
+          data: [totals[0]],
+          color: colors(0)
+
+      }, {
+          name: 'Silver',
+          data: [totals[1]],
+          color: colors(1)
+
+      }, {
+          name: 'Bronze',
+          data: [totals[2]],
+          color: colors(2)
+
+      }],
+      drilldown: {
+          series: drilldownSeries,
+          drillUpButton: {
+            position: {
+              align: 'right'
+            }
+          },
+          animation: true
+      }
+  });
+  console.log(totals[0]);
+
+  */
+
+</script>
+
+</body>
+</html>
