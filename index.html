@@ -125,52 +125,41 @@ $.get("_data/expenditures.csv", function (data) {
 
   var budget = [];
   var actual = [];
+  var months = [];
+
 
   var lines = data.split(/\r/);
   console.log(lines);
 
   $.each(lines, function(lineNo, line) {
-    console.log(line);
+    // console.log(line);
+    var temp = line.split(',');
+    if(lineNo == 0) {
+      months.push(temp);
+    }
+    else {
+      var dept = '';
+      var res =[];
+      if(temp[1]=='Budget') {
+        dept = 'Budget';
+        for (var i = 2; i<14;i++) {
+            res.push(temp[i]);
+        }
+        budget.push({'department':temp[0], 'data':res});
+      }
+      else {
+          dept = 'Actual';
+          for (var i = 2; i<14;i++) {
+              res.push(temp[i]);
+          }
+          actual.push({'department':temp[0], 'data':res});
+      } 
+    }
   });
+  console.log(budget);
+  console.log(actual);
 
 });
-
-
-/*
-  var medalType = [];
-  var medalCount = [[], [], []];
-
-  var lines = data.split(/\n/);
-  console.log(lines);
-  // loop through each line using $.each
-  $.each(lines, function(lineNo, line) {
-
-    // turn each line into an array that contains 5 items: sport type, gold count, silver count, bronze count, & total count
-    // use the .split() method
-    var temp = line.split(',');
-    // use if an statement to differentiate between header & content
-    if (lineNo == 0) {
-    // if it's the header,
-      // split the array
-      // and add only gold, silver, and bronze to "medalType"
-
-      medalType.push(temp[1]);
-      medalType.push(temp[2]);
-      medalType.push(temp[3]);
-
-    } else {
-    // otherwise,
-      // populate "options.xAxis.categories" array with the sports type ("Archery", "Athletics", etc.)
-      // populate "medalCount" array; push the gold medal count to the medalCount[0], silver to medalCount[1], & bronze to medalCount[2]
-      options.xAxis.categories.push(temp[0]);
-      
-      medalCount[0].push(parseInt(temp[1]));
-      medalCount[1].push(parseInt(temp[2]));
-      medalCount[2].push(parseInt(temp[3]));
-      
-    };    
-
-  });
 
   // "options.series" is an array & each item in the array is an object with 3 keys: "name", "data", & "color"; in this example:
     // "name" = type of medal (gold/silver/bronze)
