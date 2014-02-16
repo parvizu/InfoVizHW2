@@ -9,7 +9,7 @@
 <body>
     <div id="container" class="level1">
     </div>
-    <!-- <div id="container2" class="level1"></div> -->
+    <div id="container3"></div>
 
 <script>
 
@@ -44,104 +44,6 @@ function colors(i) {
 }  
 
 
-
-// set up the initial options
-var options = {
-  chart: {
-    renderTo: "container",
-    type: "bar",
-    style: {
-      fontFamily: "Helvetica,Arial,sans-serif"
-    }
-  },
-  legend: {
-    borderRadius: 0,
-    itemStyle: {
-      color: "#000000",
-      fontFamily: "Helvetica,Arial,sans-serif",
-      fontSize: '10px'
-    }
-  },
-  plotOptions: {
-    series: {
-      stacking: "normal",
-      // point: {
-      //   events: {
-      //     mouseOver: function () { 
-      //       var percentage = (this.y/this.total)*100;
-      //       var rest = 100 - percentage;
-      //       console.log(this);
-      //       updatePie(this.series.name,percentage,rest,this.graphic.fill); 
-      //     }
-      //   }
-      // }
-    }
-  },
-  series: [],
-  title: {
-    text: "Total Budget Distribution",
-    style: {
-      color: "#000000",
-      fontFamily: "Helvetica,Arial,sans-serif",
-      fontSize: "20px",
-      fontWeight: "bold"
-    }
-  },
-  tooltip: {
-    // hints: borderRadius, borderWidth, shadow
-    style: {
-      // hints: color, fontFamily, fontSize, padding
-      color: "black",
-      borderRadius: "5px",
-      fontSize: "12px"
-    }
-  },
-  xAxis: {
-    categories: [],
-    labels: {
-      style: {
-        color: "#333333",
-        fontFamily: "Helvetica,Arial,sans-serif"
-      }
-    },
-    title: {
-      text: "",
-      style: {
-        color: "#333333",
-        fontFamily: "Helvetica,Arial,sans-serif",
-        fontSize: "18px"
-      }
-    }
-  },
-  yAxis: {
-    // hints: gridLineColor, gridLineDashStyle
-    labels: {
-      style: {
-        color: "#333333",
-        fontFamily: "Helvetica,Arial,sans-serif"
-      }
-    },
-    min: 0,
-    stackLabels: {
-      enabled: true,
-      style: {
-        fontFamily: "Helvetica,Arial,sans-serif",
-        fontWeight: "bold",
-        color: "#333333"
-      }
-    },
-    title: {
-      style: {
-        color: "#333333",
-        fontFamily: "Helvetica,Arial,sans-serif",
-        fontSize: "18px"
-      },
-      text: " "
-    }
-  }
-}
-
-
 // ajax call to data from the csv file
 $.get("_data/expenditures.csv", function (data) {
 
@@ -163,6 +65,12 @@ $.get("_data/expenditures.csv", function (data) {
     var temp = line.split(',');
     if(lineNo == 0) {
       months.push(temp);
+      $.each(temp, function(i, month){
+        if(i >1) {
+          monthlyBudget[month] = 0;
+          monthlyActual[month] =0;
+        }
+      })
     }
     else {
       var dept = '';
@@ -171,24 +79,123 @@ $.get("_data/expenditures.csv", function (data) {
         dept = 'Budget';
         for (var i = 2; i<14;i++) {
             res.push(temp[i]);
-            monthlyBudget[months[0][i]]+=parseInt(temp[i]);
+            monthlyBudget[months[0][i]]+= parseInt(temp[i]);
             totalBudget += parseInt(temp[i]);
         }
+        //console.log(monthlyBudget);
         budget.push({'department':temp[0], 'data':res});
       }
       else {
           dept = 'Actual';
           for (var i = 2; i<14;i++) {
               res.push(temp[i]);
+              console.log(temp[i]);
               monthlyActual[months[0][i]]+=parseInt(temp[i]);
           }
           actual.push({'department':temp[0], 'data':res});
       } 
     }
   });
-  // console.log(budget);
-  // console.log(actual);
 
+  // set up the initial options
+  var options = {
+    chart: {
+      renderTo: "container",
+      type: "bar",
+      style: {
+        fontFamily: "Helvetica,Arial,sans-serif"
+      }
+    },
+    legend: {
+      borderRadius: 0,
+      itemStyle: {
+        color: "#000000",
+        fontFamily: "Helvetica,Arial,sans-serif",
+        fontSize: '10px'
+      }
+    },
+    plotOptions: {
+      series: {
+        stacking: "normal",
+        // point: {
+        //   events: {
+        //     mouseOver: function () { 
+        //       var percentage = (this.y/this.total)*100;
+        //       var rest = 100 - percentage;
+        //       console.log(this);
+        //       updatePie(this.series.name,percentage,rest,this.graphic.fill); 
+        //     }
+        //   }
+        // }
+      }
+    },
+    series: [],
+    title: {
+      text: "Total Budget Distribution",
+      style: {
+        color: "#000000",
+        fontFamily: "Helvetica,Arial,sans-serif",
+        fontSize: "20px",
+        fontWeight: "bold"
+      }
+    },
+    tooltip: {
+      // hints: borderRadius, borderWidth, shadow
+      style: {
+        // hints: color, fontFamily, fontSize, padding
+        color: "black",
+        borderRadius: "5px",
+        fontSize: "12px"
+      }
+    },
+    xAxis: {
+      categories: [],
+      labels: {
+        style: {
+          color: "#333333",
+          fontFamily: "Helvetica,Arial,sans-serif"
+        }
+      },
+      title: {
+        text: "",
+        style: {
+          color: "#333333",
+          fontFamily: "Helvetica,Arial,sans-serif",
+          fontSize: "18px"
+        }
+      }
+    },
+    yAxis: {
+      // hints: gridLineColor, gridLineDashStyle
+      labels: {
+        style: {
+          color: "#333333",
+          fontFamily: "Helvetica,Arial,sans-serif"
+        }
+      },
+      min: 0,
+      max: totalBudget,
+      stackLabels: {
+        enabled: true,
+        style: {
+          fontFamily: "Helvetica,Arial,sans-serif",
+          fontWeight: "bold",
+          color: "#333333"
+        }
+      },
+      title: {
+        style: {
+          color: "#333333",
+          fontFamily: "Helvetica,Arial,sans-serif",
+          fontSize: "18px"
+        },
+        text: " "
+      }
+    }
+  };
+
+
+  console.log(options);
   $.each(budget, function(i,dept) {
     var t = 0;
     $.each(dept.data, function (j,data){
@@ -212,9 +219,6 @@ $.get("_data/expenditures.csv", function (data) {
 
 
 function updatePie(department, percentage, rest,sliceColor) {
-  // console.log(department);
-  // console.log(percentage);
-  // console.log(rest);
   var pieOptions = {
     chart: {
       renderTo: "container2",
@@ -241,7 +245,6 @@ function updatePie(department, percentage, rest,sliceColor) {
         ]
     }]
   };
-  //console.log(pieOptions);
   var chart2 = new Highcharts.Chart(pieOptions);
 }
 
