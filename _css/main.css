@@ -61,11 +61,18 @@ table {
 /* CONTENT */
 
 #container{
-  height: 600px; 
-  width: 90%;
+  height: 180px; 
+  width: 800px;
+}
+
+.level1 {
+	display:inline-block;
+	background-color: silver;
+	padding:5px;
 }
 
 #container2 {
-  height: 400px; 
-  width: 90%;
+  height: 180px; 
+  width: 200px;
+  background-color: lightsteelblue;
 }

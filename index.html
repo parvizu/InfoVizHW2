@@ -5,12 +5,11 @@
     <link rel="stylesheet" href="_css/main.css">
     <script src="_js/jquery-1.11.0.min.js"></script>
     <script src="_js/highcharts.js"></script>
-    <script src="http://code.highcharts.com/modules/data.js"></script>
-    <script src="http://code.highcharts.com/modules/drilldown.js"></script>
 </head>
 <body>
-    <div id="container">
+    <div id="container" class="level1">
     </div>
+    <!-- <div id="container2" class="level1"></div> -->
 
 <script>
 
@@ -18,13 +17,28 @@
 function colors(i) {
   switch(i) {
     case 0:
-      return "#CFB53B";
+      return "LIGHTBLUE";
       break;
     case 1:
-      return "#DDDDDD";
+      return "GREEN";
       break;
     case 2:
       return "#8C7853";
+      break;
+    case 3:
+      return "#000000";
+      break;
+    case 4:
+      return "#666666";
+      break;
+    case 5:
+      return "RED";
+      break;
+    case 6:
+      return "BLUE";
+      break;
+    case 7:
+      return "ORANGE";
       break;
   };
 }  
@@ -44,17 +58,28 @@ var options = {
     borderRadius: 0,
     itemStyle: {
       color: "#000000",
-      fontFamily: "Helvetica,Arial,sans-serif"
+      fontFamily: "Helvetica,Arial,sans-serif",
+      fontSize: '10px'
     }
   },
   plotOptions: {
     series: {
-      stacking: "normal"
+      stacking: "normal",
+      // point: {
+      //   events: {
+      //     mouseOver: function () { 
+      //       var percentage = (this.y/this.total)*100;
+      //       var rest = 100 - percentage;
+      //       console.log(this);
+      //       updatePie(this.series.name,percentage,rest,this.graphic.fill); 
+      //     }
+      //   }
+      // }
     }
   },
   series: [],
   title: {
-    text: "US 2012 Olympics Medal Count",
+    text: "Total Budget Distribution",
     style: {
       color: "#000000",
       fontFamily: "Helvetica,Arial,sans-serif",
@@ -80,7 +105,7 @@ var options = {
       }
     },
     title: {
-      text: "Sport",
+      text: "",
       style: {
         color: "#333333",
         fontFamily: "Helvetica,Arial,sans-serif",
@@ -111,11 +136,10 @@ var options = {
         fontFamily: "Helvetica,Arial,sans-serif",
         fontSize: "18px"
       },
-      text: "# of Medals"
+      text: " "
     }
   }
 }
-
 
 
 // ajax call to data from the csv file
@@ -126,10 +150,13 @@ $.get("_data/expenditures.csv", function (data) {
   var budget = [];
   var actual = [];
   var months = [];
+  var totalBudget = 0;
+  var monthlyBudget = [];
+  var monthlyActual = [];
 
 
   var lines = data.split(/\r/);
-  console.log(lines);
+  //console.log(lines);
 
   $.each(lines, function(lineNo, line) {
     // console.log(line);
@@ -144,6 +171,8 @@ $.get("_data/expenditures.csv", function (data) {
         dept = 'Budget';
         for (var i = 2; i<14;i++) {
             res.push(temp[i]);
+            monthlyBudget[months[0][i]]+=parseInt(temp[i]);
+            totalBudget += parseInt(temp[i]);
         }
         budget.push({'department':temp[0], 'data':res});
       }
@@ -151,15 +180,70 @@ $.get("_data/expenditures.csv", function (data) {
           dept = 'Actual';
           for (var i = 2; i<14;i++) {
               res.push(temp[i]);
+              monthlyActual[months[0][i]]+=parseInt(temp[i]);
           }
           actual.push({'department':temp[0], 'data':res});
       } 
     }
   });
-  console.log(budget);
-  console.log(actual);
+  // console.log(budget);
+  // console.log(actual);
 
+  $.each(budget, function(i,dept) {
+    var t = 0;
+    $.each(dept.data, function (j,data){
+      t += parseInt(data);
+    })
+    options.series.push({
+      'data': [t],
+      'name': dept.department,
+      'color': colors(i),
+      'percentage': t/totalBudget,
+      'rest':100 - (t/totalBudget) 
+    });
+  });
+
+  // console.log(options);
+  options.xAxis.categories.push('Budget');
+  var chart = new Highcharts.Chart(options);
+
+  //updatePie();
 });
+
+
+function updatePie(department, percentage, rest,sliceColor) {
+  // console.log(department);
+  // console.log(percentage);
+  // console.log(rest);
+  var pieOptions = {
+    chart: {
+      renderTo: "container2",
+      title: department +'% of Budget',
+      style: {
+        fontFamily: "Helvetica,Arial,sans-serif"
+      }
+    },
+    plotOptions : {
+      pie: {
+        dataLabels: {
+          enabled: true,
+          color: '#000000',
+          format: '{point.name} {point.data}'
+        }
+      }
+    },
+    series: [{
+      type: 'pie',
+      name: '%',
+      color: sliceColor,
+      data: [
+        [department, percentage], ['Rest',rest]
+        ]
+    }]
+  };
+  //console.log(pieOptions);
+  var chart2 = new Highcharts.Chart(pieOptions);
+}
 
 /*
   // "options.series" is an array & each item in the array is an object with 3 keys: "name", "data", & "color"; in this example:
