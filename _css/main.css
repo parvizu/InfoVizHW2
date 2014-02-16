@@ -65,14 +65,14 @@ table {
   width: 800px;
 }
 
-.level1 {
-	display:inline-block;
-	background-color: silver;
-	padding:5px;
+#container2 {
+	height: 600px;
+	width: 800px;
+	background-color: black;
 }
 
 #container3 {
-  height: 180px; 
+  height: 100px; 
   width: 800px;
   background-color: lightsteelblue;
 }

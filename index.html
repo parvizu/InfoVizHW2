@@ -7,8 +7,9 @@
     <script src="_js/highcharts.js"></script>
 </head>
 <body>
-    <div id="container" class="level1">
+    <div id="container">
     </div>
+    <div id='container2'></div>
     <div id="container3"></div>
 
 <script>
@@ -68,7 +69,7 @@ $.get("_data/expenditures.csv", function (data) {
       $.each(temp, function(i, month){
         if(i >1) {
           monthlyBudget[month] = 0;
-          monthlyActual[month] =0;
+          monthlyActual[month] = 0;
         }
       })
     }
@@ -89,7 +90,6 @@ $.get("_data/expenditures.csv", function (data) {
           dept = 'Actual';
           for (var i = 2; i<14;i++) {
               res.push(temp[i]);
-              console.log(temp[i]);
               monthlyActual[months[0][i]]+=parseInt(temp[i]);
           }
           actual.push({'department':temp[0], 'data':res});
@@ -174,7 +174,6 @@ $.get("_data/expenditures.csv", function (data) {
         }
       },
       min: 0,
-      max: totalBudget,
       stackLabels: {
         enabled: true,
         style: {
@@ -202,10 +201,10 @@ $.get("_data/expenditures.csv", function (data) {
       t += parseInt(data);
     })
     options.series.push({
-      'data': [t],
+      'temp': [t],
       'name': dept.department,
       'color': colors(i),
-      'percentage': t/totalBudget,
+      'data': [(t/totalBudget)*100],
       'rest':100 - (t/totalBudget) 
     });
   });
@@ -215,6 +214,101 @@ $.get("_data/expenditures.csv", function (data) {
   var chart = new Highcharts.Chart(options);
 
   //updatePie();
+
+  var options = {
+    chart: {
+      renderTo: "container",
+      type: "bar",
+      style: {
+        fontFamily: "Helvetica,Arial,sans-serif"
+      }
+    },
+    legend: {
+      borderRadius: 0,
+      itemStyle: {
+        color: "#000000",
+        fontFamily: "Helvetica,Arial,sans-serif",
+        fontSize: '10px'
+      }
+    },
+    plotOptions: {
+      series: {
+        stacking: "normal",
+        // point: {
+        //   events: {
+        //     mouseOver: function () { 
+        //       var percentage = (this.y/this.total)*100;
+        //       var rest = 100 - percentage;
+        //       console.log(this);
+        //       updatePie(this.series.name,percentage,rest,this.graphic.fill); 
+        //     }
+        //   }
+        // }
+      }
+    },
+    series: [],
+    title: {
+      text: "Total Budget Distribution",
+      style: {
+        color: "#000000",
+        fontFamily: "Helvetica,Arial,sans-serif",
+        fontSize: "20px",
+        fontWeight: "bold"
+      }
+    },
+    tooltip: {
+      // hints: borderRadius, borderWidth, shadow
+      style: {
+        // hints: color, fontFamily, fontSize, padding
+        color: "black",
+        borderRadius: "5px",
+        fontSize: "12px"
+      }
+    },
+    xAxis: {
+      categories: [],
+      labels: {
+        style: {
+          color: "#333333",
+          fontFamily: "Helvetica,Arial,sans-serif"
+        }
+      },
+      title: {
+        text: "",
+        style: {
+          color: "#333333",
+          fontFamily: "Helvetica,Arial,sans-serif",
+          fontSize: "18px"
+        }
+      }
+    },
+    yAxis: {
+      // hints: gridLineColor, gridLineDashStyle
+      labels: {
+        style: {
+          color: "#333333",
+          fontFamily: "Helvetica,Arial,sans-serif"
+        }
+      },
+      min: 0,
+      stackLabels: {
+        enabled: true,
+        style: {
+          fontFamily: "Helvetica,Arial,sans-serif",
+          fontWeight: "bold",
+          color: "#333333"
+        }
+      },
+      title: {
+        style: {
+          color: "#333333",
+          fontFamily: "Helvetica,Arial,sans-serif",
+          fontSize: "18px"
+        },
+        text: " "
+      }
+    }
+  };
 });
 
 
