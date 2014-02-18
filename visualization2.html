@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<head>
+    <meta charset="UTF-8" />
+    <title>Busines expenditures</title>
+    <link rel="stylesheet" href="_css/main2.css">
+    <script src="_js/jquery-1.11.0.min.js"></script>
+    <script src="_js/highcharts.js"></script>
+ <!--    // <script src="http://code.highcharts.com/highcharts-more.js"></script> -->
+</head>
+<body>
+  <div id="chart2">
+    <div id="container">
+    </div>
+    <div id="container3" class="subcontainer"></div>
+    <div id="container4" class="subcontainer"></div>
+  </div>
+    
+
+<script>
+// function to return color (gold/silver/bronze)
+function colors(i) {
+  switch(i) {
+    case 0:
+      return "#043836";
+      break;
+    case 1:
+      return "#0a827c";
+      break;
+    case 2:
+      return "#ab827c";
+      break;
+    case 3:
+      return "#fa482e";
+      break;
+    case 4:
+      return "#f4a32e";
+      break;
+    case 5:
+      return "#9abf88";
+      break;
+    case 6:
+      return "#5698c4";
+      break;
+    case 7:
+      return "#9163b6";
+      break;
+  };
+}  
+
+
+// ajax call to data from the csv file
+$.get("_data/expenditures.csv", function (data) {
+
+  //console.log(data);
+
+  var budget = [];
+  var actual = [];
+  var months = [];
+  var totalBudget = 0;
+  var monthlyBudget = [0,0,0,0,0,0,0,0,0,0,0];
+  var monthlyActual = [0,0,0,0,0,0,0,0,0,0,0];
+  var deptBudget = [0,0,0,0,0,0,0,0];
+  var deptActual = [0,0,0,0,0,0,0,0];
+
+  var lines = data.split(/\r/);
+  //console.log(lines);
+
+  $.each(lines, function(lineNo, line) {
+    console.log(lineNo + " : "+line);
+    var temp = line.split(',');
+    if(lineNo == 0) {
+      months.push(temp);
+      $.each(temp, function(i, month){
+        if(i >1) {
+          // monthlyBudget[month] = 0;
+          // monthlyActual[month] = 0;
+        }
+      })
+    }
+    else {
+      var dept = '';
+      var res =[];
+      if(temp[1]=='Budget') {
+        dept = 'Budget';
+        for (var i = 2; i<13;i++) {
+            res.push(temp[i]);
+            monthlyBudget[i-2] += parseInt(temp[i]);
+            totalBudget += parseInt(temp[i]);
+        }
+        //console.log(monthlyBudget);
+        budget.push({'department':temp[0], 'data':res});
+      }
+      else {
+          dept = 'Actual';
+          for (var i = 2; i<13;i++) {
+              res.push(temp[i]);
+              monthlyActual[i-2]+=parseInt(temp[i]);
+          }
+          actual.push({'department':temp[0], 'data':res});
+      } 
+    }
+  });
+
+  // set up the initial options
+  var options = {
+    chart: {
+      renderTo: "container",
+      type: "bar",
+      style: {
+        fontFamily: "Helvetica,Arial,sans-serif"
+      }
+    },
+    // pane: {
+    //   size: '90%'
+    // },
+    legend: {
+      borderRadius: 0,
+      itemStyle: {
+        color: "#000000",
+        fontFamily: "Helvetica,Arial,sans-serif",
+        fontSize: '10px'
+      }
+    },
+    plotOptions: {
+      series: {
+        stacking: "normal",
+        // point: {
+        //   events: {
+        //     mouseOver: function () { 
+        //       var percentage = (this.y/this.total)*100;
+        //       var rest = 100 - percentage;
+        //       console.log(this);
+        //       updatePie(this.series.name,percentage,rest,this.graphic.fill); 
+        //     }
+        //   }
+        // }
+      }
+    },
+    series: [],
+    title: {
+      text: "Business Budget Distribution by Department (until November)"
+      // style: {
+      //   color: "#000000",
+      //   fontFamily: "Helvetica,Arial,sans-serif",
+      //   fontSize: "20px",
+      //   fontWeight: "bold"
+      // }
+    },
+    tooltip: {
+      // hints: borderRadius, borderWidth, shadow
+      style: {
+        // hints: color, fontFamily, fontSize, padding
+        color: "black",
+        borderRadius: "5px",
+        fontSize: "12px"
+      }
+    },
+    xAxis: {
+      categories: [],
+      labels: {
+        style: {
+          color: "#333333",
+          fontFamily: "Helvetica,Arial,sans-serif"
+        }
+      },
+      title: {
+        text: "",
+        style: {
+          color: "#333333",
+          fontFamily: "Helvetica,Arial,sans-serif",
+          fontSize: "18px"
+        }
+      }
+    },
+    yAxis: {
+      // hints: gridLineColor, gridLineDashStyle
+      labels: { 
+        format: '{value}%',
+        style: {
+          color: "#333333",
+          fontFamily: "Helvetica,Arial,sans-serif"
+        }
+      },
+      min: 0,
+      max: 100,
+      stackLabels: {
+        enabled: true,
+        style: {
+          fontFamily: "Helvetica,Arial,sans-serif",
+          fontWeight: "bold",
+          color: "#333333"
+        }
+      },
+      title: {
+        style: {
+          color: "#333333",
+          fontFamily: "Helvetica,Arial,sans-serif",
+          fontSize: "18px"
+        },
+        text: ""
+      }
+    }
+  };
+
+  $.each(budget, function(i,dept) {
+    var t = 0;
+    $.each(dept.data, function (j,data){
+      t += parseInt(data);
+    })
+    options.series.push({
+      'temp': [t],
+      'name': dept.department,
+      'color': colors(i),
+      'data': [(t/totalBudget)*100],
+      'rest':100 - (t/totalBudget) 
+    });
+  });
+
+  // console.log(options);
+  options.xAxis.categories.push('Budget');
+  var chart = new Highcharts.Chart(options);
+
+  //updatePie();
+
+  var optionsSpark = {
+    chart: {
+      renderTo: "container3",
+      type: "area",
+      style: {
+        fontFamily: "Helvetica,Arial,sans-serif"
+      }
+    },
+    title: {
+      enabled: false,
+      text:"Monthly Business Expenses and Budget across all departments"
+    },
+    legend: {
+      borderRadius: 0,
+      layout : 'vertical',
+      verticalAlign: 'middle',
+      align: 'right',
+      itemStyle: {
+        color: "#000000",
+        fontFamily: "Helvetica,Arial,sans-serif",
+        fontSize: '10px'
+      }
+    },
+    plotOptions: {
+      area : {
+        marker: {
+          symbol: 'circle',
+          radius: 1,
+          states: {
+            hover: {
+              enabled: true
+            }
+          }
+        }
+      },
+      line: {
+        marker: {
+          enabled: false,
+          radius: 1,
+          symbol: "circle",
+          states: {
+            hover: {
+              enabled: true
+            }
+          }
+        }
+      }
+    },
+    series: [
+      {
+        name: 'Expenses',
+        data: monthlyActual,
+        type: 'area',
+        color: '#8DB1C3'
+      },
+      {
+        name: 'Budget',
+        data: monthlyBudget,
+        type: 'line',
+        color: '#000000',
+        lineWidth:1.5,
+        marker: {
+          fill: 0,
+          lineWidth: 2,
+          lineColor: '#000000'
+        }
+      }
+    ],
+    tooltip: {
+      // hints: borderRadius, borderWidth, shadow
+      style: {
+        // hints: color, fontFamily, fontSize, padding
+        color: "black",
+        borderRadius: "5px",
+        fontSize: "12px"
+      }
+    },
+    xAxis: {
+      categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov"],
+      labels: {
+        style: {
+          color: "#333333",
+          fontFamily: "Helvetica,Arial,sans-serif"
+        }
+      },
+      title: {
+        text: "",
+        style: {
+          color: "#333333",
+          fontFamily: "Helvetica,Arial,sans-serif",
+          fontSize: "18px"
+        }
+      }
+    },
+    yAxis: {
+      // hints: gridLineColor, gridLineDashStyle
+      labels: {
+        formatter:function() {
+          return Highcharts.numberFormat(this.value, 0, '', ',');
+        },
+        style: {
+          color: "#333333",
+          fontFamily: "Helvetica,Arial,sans-serif"
+        }
+      },
+      min: 1600,
+      max:2000,
+      title: {
+        text: "USD ($)"
+      }
+    }
+  };
+
+  var chart3 = new Highcharts.Chart(optionsSpark);
+
+  console.log(optionsSpark.series);
+  console.log(optionsSpark.xAxis.categories);
+
+  $.each(budget, function(i,item) {
+    $.each(item.data, function(j,value) {
+      deptBudget[i] += parseInt(value);
+    });
+  });
+  console.log(deptBudget);
+
+  $.each(actual, function(i,item) {
+    $.each(item.data, function(j,value) {
+      deptActual[i] += parseInt(value);
+    });
+  });
+  console.log(deptActual);
+
+  Highcharts.Renderer.prototype.symbols.hline = function(x, y, width, height) {
+    return ['M',x ,y + height / 2,'L',x+(width),y + width / 2];
+  };
+
+  var optionsSpider = {
+    chart: {
+      renderTo: "container4",
+      type: 'column',
+      style: {
+        fontFamily: "Helvetica,Arial,sans-serif"
+      }
+    },
+    legend: {
+      borderRadius: 0,
+      layout : 'vertical',
+      verticalAlign: 'middle',
+      align: 'right',
+      itemStyle: {
+        color: "#000000",
+        fontFamily: "Helvetica,Arial,sans-serif",
+        fontSize: '10px'
+      }
+    },
+    title: {
+      text:"Business Expenses and Budget by Deparment"
+    },
+    xAxis : {
+      categories : ['Information Technology','Executive','Facilities','Finance','Human Resources','Marketing','Sales','Technical Support'],
+      tickmarkPlacement: 'on',
+      lineWidth: 0
+    },
+    yAxis : {
+      minorTickInterval: 2500, 
+      lineColor:'#999',
+      tickColor:'#666',
+      tickWidth:2,
+      tickLength:2,
+      gridLineColor:'#ddd',
+      gridLineInterpolation: 'polygon',
+      min: 500,
+      max:6000,
+      title: {
+        text: "USD ($)"
+      }
+    },
+
+    series: [
+      {
+        name: 'Expenses',
+        data: []
+      },
+      { 
+        name: 'Budget',
+        data: deptBudget,
+        type: 'scatter',
+        marker: {
+          enabled: true,
+          symbol: 'hline',
+          radius: 30,
+          fill: 0,
+          lineWidth: 1,
+          lineColor: 'black'
+        }
+      }
+    ]
+  }
+
+  for (var i = 0; i< deptActual.length; i++) {
+   //console.log(optionsSpider.series.data);
+    optionsSpider.series[0].data.push( {
+      y: parseInt(deptActual[i]),
+      color: colors(i)
+    });
+  }
+  console.log(optionsSpider);
+
+  var chart4 = new Highcharts.Chart(optionsSpider);
+});
+
+
+
+
+
+function updatePie(department, percentage, rest,sliceColor) {
+  var pieOptions = {
+    chart: {
+      renderTo: "pieChart",
+      title: department +'% of Budget',
+      style: {
+        fontFamily: "Helvetica,Arial,sans-serif"
+      }
+    },
+    plotOptions : {
+      pie: {
+        dataLabels: {
+          enabled: true,
+          color: '#000000',
+          format: '{point.name} {point.data}'
+        }
+      }
+    },
+    plotOptions : {
+      line: {
+        marker : {
+          enabled: false
+        }
+      }
+    },
+    series: [{
+      type: 'pie',
+      name: '%',
+      color: sliceColor,
+      data: [
+        [department, percentage], ['Rest',rest]
+        ]
+    }]
+  };
+  var chart2 = new Highcharts.Chart(pieOptions);
+}
+
+</script>
+
+</body>
+</html>
